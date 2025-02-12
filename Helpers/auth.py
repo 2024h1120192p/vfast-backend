@@ -68,14 +68,15 @@ async def gauth_login_helper(token,db,role=ROLES.USER):
     users_col = db["Users"] if role == ROLES.USER else db["AdminUsers"]
     user = await users_col.find_one({"$or":[{"google-id": user_info["sub"]},{"email": user_info["email"]}]},)
     if user is None and role == ROLES.USER:
+        full_name = user_info["name"].split()
         user = {
-                "_id":ObjectId(),
-                "username": user_info["email"],
-                "email": user_info["email"],
-                "google_id": user_info["sub"],
-                "role": ROLES.USER.value,
-                "otp":str(random.randint(100000, 999999)),
-                "password":None
+            "_id": ObjectId(),
+            "username": full_name[0] + ''.join(f' {part[0]}.' for part in full_name[1:]),
+            "email": user_info["email"],
+            "google_id": user_info["sub"],
+            "role": ROLES.USER.value,
+            "otp": str(random.randint(100000, 999999)),
+            "password": None
             }
         await users_col.insert_one(user)
     elif user is None and role != ROLES.USER:
@@ -83,8 +84,16 @@ async def gauth_login_helper(token,db,role=ROLES.USER):
 
     if not user.get("google_id"):
         await users_col.update_one({"email":user["email"]},{"$set":{"google_id": user_info["sub"]}})
-
-    access_token, error = create_access_token({"roles": user.get("role"), "id": str(user["_id"]), "scopes": ["login"]})
+    
+    # Later need to convert this to a seperate API which gets user details independently of token
+    payload = {
+        "roles": user.get("role"), 
+        "id": str(user["_id"]), 
+        "username": str(user["username"]),
+        "email": str(user["email"]),
+        "scopes": ["login"]
+    }
+    access_token, error = create_access_token(payload)
     if error:
         return None, JSONResponse(status_code=500, content=error_response(message=str(error)))
 
