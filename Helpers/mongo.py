@@ -410,7 +410,7 @@ def get_user_bookings_pipeline(user):
             }
         }
     },
-        {"$limit":1}
+        {"$limit":10}
 ]
 
 
