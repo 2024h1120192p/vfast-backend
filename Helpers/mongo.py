@@ -403,6 +403,8 @@ def get_user_bookings_pipeline(user):
             'check_in': 1,
             'check_out': 1,
             'booked_room_type': 1,
+            'email':1,
+            'phone_number':1,
             'booking_status': 1,
             'pax': 1,
             'number_of_rooms': {
@@ -410,7 +412,7 @@ def get_user_bookings_pipeline(user):
             }
         }
     },
-        {"$limit":1}
+        {"$limit":10}
 ]
 
 
