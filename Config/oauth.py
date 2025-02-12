@@ -41,11 +41,11 @@ def verify_google_token(token):
         )
 
         # ID token is valid. Extract claims
-        print("User's Google ID:", id_info["sub"])
-        print("Email:", id_info["email"])
-        print("Email Verified:", id_info["email_verified"])
-        print("Full Name:", id_info.get("name"))
-        print("Profile Picture URL:", id_info.get("picture"))
+        # print("User's Google ID:", id_info["sub"])
+        # print("Email:", id_info["email"])
+        # print("Email Verified:", id_info["email_verified"])
+        # print("Full Name:", id_info.get("name"))
+        # print("Profile Picture URL:", id_info.get("picture"))
         return id_info
     except ValueError as e:
         print("Invalid token:", e)
