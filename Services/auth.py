@@ -56,7 +56,13 @@ async def g_auth(request: Request,response: Response,jData : GAuthRequest):
         response,error = await gauth_login_helper(jData.token,request.app.mongodb)
         if error:
             return error
-
+        
+        req_data = json.loads(await request.body())
+        recaptchaToken = req_data.get('recaptchaToken')
+        recaptcha_valid = await recaptcha_verification_helper(recaptchaToken)
+        if not recaptcha_valid:
+            return JSONResponse(content=error_response(message="Invalid Recaptcha"),status_code=status.HTTP_400_BAD_REQUEST)
+        
         data = {"access_token": response}
         return JSONResponse(content=success_response(message="Success",data=data), status_code=status.HTTP_200_OK)
     except Exception as error:

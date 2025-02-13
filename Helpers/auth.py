@@ -1,11 +1,13 @@
 from Config.constants import ROLES
 from Config.oauth import verify_google_token
+from Config.secrets import settings
 from Importers.common_imports import *
 from Importers.common_functions import *
 from Config.jwt import *
 from Helpers.email import sendOtp
 username_regex = r'[a-zA-Z0-9._%+-]+@pilani\.bits-pilani\.ac\.in'
 import pyotp
+import requests
 
 
 def generate__otp(secret_key, interval=900):
@@ -99,4 +101,12 @@ async def gauth_login_helper(token,db,role=ROLES.USER):
 
     return access_token, None
 
-
+async def recaptcha_verification_helper(recaptchaToken):
+    url = 'https://www.google.com/recaptcha/api/siteverify'
+    data = {
+        'secret': settings.RECAPTCHA_SECRET_KEY,
+        'response': recaptchaToken
+    }
+    response = requests.post(url, data=data)
+    result = response.json()
+    return result.get('success', False)
