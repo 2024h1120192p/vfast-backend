@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY: str
     AWS_SECRET_KEY: str
     GOOGLE_CLIENT_ID: str
+    RECAPTCHA_SECRET_KEY: str
 
     class Config:
         env_file = ".env"
