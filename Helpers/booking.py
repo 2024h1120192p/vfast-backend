@@ -131,14 +131,14 @@ async def booking_request(data,user,db):
 
 
 
-async def confirm_booking(booking_id,status,user,db,reason=None,rooms_alloted= None):
+async def confirm_booking(booking_id,new_status,user,db,reason=None,rooms_alloted= None):
     rooms = db["Room"]
     bookings = db["Bookings"]
     users = db["Users"]
 
     booking_info = await bookings.find_one({"_id": ObjectId(booking_id)})
     user_info = await users.find_one({"_id": ObjectId(booking_info["booked_user_id"])})
-    if status == "accept":
+    if new_status == "accept":
         booking_status = BOOKING_STATUS.RESERVED.value
         for alloted in rooms_alloted:
             alloted["_id"] = ObjectId(alloted.pop("id"))
@@ -154,15 +154,33 @@ async def confirm_booking(booking_id,status,user,db,reason=None,rooms_alloted= N
             vars = {
                 "check_in_date":booking_info["check_in"],"check_out_date":booking_info["check_out"],"number_of_rooms":len(rooms_booked),"number_of_persons":booking_info["pax"],
             }
-            error = sendBookingConfirmation(user_info["email"],vars,status="success")
-            error = sendBookingConfirmation(booking_info["email"], vars, status="success")
-
-    else:
+            # error = sendBookingConfirmation(user_info["email"], vars, status="success")
+            # error = sendBookingConfirmation(booking_info["email"], vars, status="success")
+    elif new_status == "save":
+        booking_status = BOOKING_STATUS.PENDING.value
+        for alloted in rooms_alloted:
+            alloted["_id"] = ObjectId(alloted.pop("id"))
+        await bookings.update_one({"_id":ObjectId(booking_id)},{"$set":{"booking_status":booking_status,"status_change_ts":get_timestamp(),"booked_room_id":rooms_alloted}})
+        # rooms_booked = rooms_alloted
+        # for room in rooms_booked:
+        #     existing = await bookings.find_one({"$and":[{"_id":room["_id"]},{"bookings.booking_id":ObjectId(booking_id)}]})
+        #     if existing:
+        #         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST,content=error_response(message="Booking already exists"))
+        #     room_bookings = RoomBookings(check_in = booking_info["check_in"],check_out = booking_info["check_out"],booking_id = booking_info["_id"],booked_user_id=ObjectId(user["id"]))
+        #     await rooms.update_one({"_id":room["_id"]},{"$addToSet":{"bookings":room_bookings.model_dump()}})
+        #     vars = {
+        #         "check_in_date":booking_info["check_in"],"check_out_date":booking_info["check_out"],"number_of_rooms":len(rooms_booked),"number_of_persons":booking_info["pax"],
+        #     }
+        #     error = sendBookingConfirmation(user_info["email"], vars, status="success")
+        #     error = sendBookingConfirmation(booking_info["email"], vars, status="success")
+        
+    elif new_status == "reject":
         booking_status = BOOKING_STATUS.REJECTED.value
         await bookings.update_one({"_id":ObjectId(booking_id)},{"$set":{"booking_status":booking_status,"status_change_ts":get_timestamp()}})
         vars = {"check_in_date":booking_info["check_in"],"check_out_date":booking_info["check_out"],"rejected_reason":reason}
-        sendBookingConfirmation(user_info["username"], vars, status="fail")
-
+        # sendBookingConfirmation(user_info["email"], vars, status="fail")
+    else:
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST,content=error_response(message=f"Unknown Status {new_status}"))
 
 
 
@@ -229,20 +247,17 @@ async def booking_action_helper(booking_id,status,user,db):
     try:
         booking_info = await bookings.find_one({"_id": ObjectId(booking_id)})
         user_info = await users.find_one({"_id": ObjectId(booking_info["booked_user_id"])})
-        if status == "check-in":
-            booking_status = BOOKING_STATUS.CHECKED_IN.value
+        
+        if status in ["check-in","check-out"]:
+            if status == "check-in":
+                booking_status = str(BOOKING_STATUS.CHECKED_IN)
+            elif status == "check-out":
+                booking_status = str(BOOKING_STATUS.CHECKED_OUT)
+                
             await bookings.update_one({"_id":ObjectId(booking_id)},{"$set":{"booking_status":booking_status,"status_change_ts":get_timestamp()}})
             rooms_booked = booking_info["booked_room_id"]
-
             for room in rooms_booked:
-                await rooms.update_one({"_id":room["_id"]}, {"status":BOOKING_STATUS.CHECKED_IN.value,"status_change_ts":get_timestamp()})
-        elif status == "check-out":
-            booking_status = BOOKING_STATUS.CHECKED_OUT.value
-            await bookings.update_one({"_id":ObjectId(booking_id)},{"$set":{"booking_status":booking_status,"status_change_ts":get_timestamp()}})
-            rooms_booked = booking_info["booked_room_id"]
-
-            for room in rooms_booked:
-                await rooms.update_one({"_id":room["_id"]}, {"status":"Available","status_change_ts":get_timestamp()})
+                await rooms.update_one({"_id":room["_id"]}, {"$set" : {"status":booking_status,"status_change_ts":get_timestamp()}})
     except Exception as error:
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,content=error_response(message=str(error)))
 
