@@ -212,7 +212,17 @@ def get_bookings_dashboard_pipeline(req_date):
             'check_out': 1,
             'phone_number': 1,
             'booked_room_type': 1,
-            'room_number': '$booked_room_id.room_number',
+            'rooms': {
+                '$map': {
+                    'input': '$booked_room_id',
+                    'as': 'room',
+                    'in': {
+                        'id': {'$toString': '$$room._id'},
+                        'type': '$booked_room_type',
+                        'room_number': '$$room.room_number'
+                    }
+                }
+            },
             'pax': 1,
             'booking_status': 1
         }
@@ -340,35 +350,44 @@ def get_requests_dashboard_pipeline(req_date):
                     {
                         'check_in': {'$lte': req_date},
                     }, {
-                        'booking_status': {'$nin': [BOOKING_STATUS.CHECKED_IN.value, BOOKING_STATUS.CHECKED_OUT.value]},
+                        'booking_status': {'$nin': [BOOKING_STATUS.REJECTED.value, BOOKING_STATUS.CHECKED_OUT.value]},
                     }
                 ]
             }
         },
         {
             '$sort': {
-                'booking_ts': -1
+                'check_in': -1
+            }
+        },
+        {
+            '$project': {
+                '_id': {
+                    '$toString': '$_id'
+                },
+                'first_name': 1,
+                'last_name': 1,
+                'gender': 1,
+                'check_in': 1,
+                'check_out': 1,
+                'phone_number': 1,
+                'booked_room_type': 1,
+                'rooms': {
+                    '$map': {
+                        'input': '$booked_room_id',
+                        'as': 'room',
+                        'in': {
+                            'id': {'$toString': '$$room._id'},
+                            'type': '$booked_room_type',
+                            'room_number': '$$room.room_number'
+                        }
+                    }
+                },
+                'pax': 1,
+                'booking_status': 1
             }
         }
-        ,
-        {
-        '$project': {
-            '_id': {
-                '$toString': '$_id'
-            },
-            'first_name': 1,
-            'last_name': 1,
-            'gender': 1,
-            'check_in': 1,
-            'check_out': 1,
-            'phone_number': 1,
-            'booked_room_type': 1,
-            'room_number': '$booked_room_id.room_number',
-            'pax': 1,
-            'booking_status': 1
-        }
-    }
-]
+    ]
 
 
 def get_user_bookings_pipeline(user):
