@@ -8,6 +8,10 @@ class BOOKING_STATUS(Enum):
     CANCELLED = "Cancelled"
     REJECTED = "Rejected"
 
+    def __str__(self):
+        return self.value
+
+
 class ROLES(Enum):
     USER = "User"
     ADMIN = "Admin"
@@ -15,6 +19,8 @@ class ROLES(Enum):
     ADMINS = ("Admin","SuperAdmin")
     ANY = ("Admin","SuperAdmin","User")
 
+    def __str__(self):
+        return self.value
 
 
 MAX_ALLOWED_PERSONS = 4
