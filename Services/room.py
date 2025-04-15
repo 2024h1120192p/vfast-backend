@@ -5,7 +5,8 @@ from Config.oauth import  get_current_user
 from Helpers.room import *
 
 
-_PATH_PREFIX = "/api/v1/rooms"
+_PATH_PREFIX = "/rooms"
+
 
 class GetRoomsRequest(BaseModel):
     type :str

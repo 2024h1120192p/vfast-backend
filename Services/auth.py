@@ -5,7 +5,10 @@ from Importers.common_functions import *
 from Config.jwt import *
 from Config.oauth import  get_current_user
 from Helpers.auth import *
-_PATH_PREFIX = "/api/v1/user"
+
+
+_PATH_PREFIX = "/user"
+
 
 class LoginRequest(BaseModel):
     username: str
@@ -85,7 +88,7 @@ async def google_sign_in(request: Request,response: Response):
     <div id="g_id_onload"
          data-client_id="855258357265-pl8s44g0hvdpmhcju8l0p2rapu8c536n.apps.googleusercontent.com"
          data-callback="handleCredentialResponse"
-         data-redirect_uri="https://efc4-103-144-92-224.ngrok-free.app/api/v1/auth/gauth"
+         data-redirect_uri="https://vfast-backend-16dd4b0bfa8f.herokuapp.com/auth/gauth"
 >
     </div>
     <div class="g_id_signin"

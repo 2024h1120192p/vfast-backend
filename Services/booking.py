@@ -5,7 +5,7 @@ from Config.oauth import  get_current_user
 from Helpers.booking import *
 
 
-_PATH_PREFIX = "/api/v1/booking"
+_PATH_PREFIX = "/booking"
 
 
 class BookingRequestRequest(BaseModel):
