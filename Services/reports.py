@@ -4,7 +4,9 @@ from Config.models import *
 from Helpers.reports import json_to_csv
 
 
-_PATH_PREFIX = "/api/v1/reports"
+_PATH_PREFIX = "/reports"
+
+
 @app.get(_PATH_PREFIX + "/occupancy",tags=["Reports"])
 def get_occupancy_report(start:str=None,end:str=None):
     try:

@@ -10,4 +10,4 @@ from Services.room import *
 from Services.reports import *
 
 if __name__ == '__main__':
-    uvicorn.run(app=app,host='0.0.0.0', port=8000, log_level='debug')
+    uvicorn.run(app=app,host='localhost', port=8000, log_level='debug', root_path="/api/v1")

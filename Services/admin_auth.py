@@ -6,7 +6,8 @@ from Config.jwt import *
 from Config.oauth import get_current_user
 from Helpers.auth import *
 
-_PATH_PREFIX = "/api/v1/admin"
+
+_PATH_PREFIX = "/admin"
 
 
 class LoginRequest(BaseModel):
